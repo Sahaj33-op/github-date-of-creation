@@ -1,8 +1,12 @@
 /* global chrome, moment, DATE_FORMAT_KEY, URIS_KEY, DEFAULT_DATE_FORMAT */
 
+// In-memory cache to prevent infinite loops and performance drops during mutations
+let cachedFormattedDate = null;
+let currentRepoURI = null;
+let domObserver = null;
+
 /**
  * Check whether the current page is a landpage or not
- * @returns {boolean}
  */
 function isLandPage() {
   let uri = window.location.pathname.substring(1);
@@ -14,8 +18,6 @@ function isLandPage() {
 
 /**
  * Check whether the gdc has been injected or not
- *
- * @returns {boolean}
  */
 function hasInjected() {
   return document.getElementById('gdc') !== null;
@@ -23,7 +25,6 @@ function hasInjected() {
 
 /**
  * Get a complete uri in the format of https://api.github.com/repos/{:owner}/{:repository}
- * @returns {string}
  */
 function getRepositoryURI() {
   const API = 'https://api.github.com/repos';
@@ -33,13 +34,11 @@ function getRepositoryURI() {
 }
 
 /**
- * Get an URI from a local storage
- * @param uri
- * @returns {Promise}
+ * Get an URI from local storage
  */
 function getURIFromStorage(uri) {
   return new Promise((resolve) => {
-    chrome.storage.sync.get({ [URIS_KEY]: {} }, (response) => {
+    chrome.storage.local.get({ [URIS_KEY]: {} }, (response) => {
       const uris = response[URIS_KEY];
       if (uris[uri]) resolve(uris[uri]);
       else resolve(null);
@@ -48,17 +47,14 @@ function getURIFromStorage(uri) {
 }
 
 /**
- * Add a new URI to a local storage
- * @param uri
- * @param date
- * @returns {Promise}
+ * Add a new URI to local storage 
  */
 function addURIToStorage(uri, date) {
   return new Promise((resolve) => {
-    chrome.storage.sync.get({ [URIS_KEY]: {} }, (response) => {
+    chrome.storage.local.get({ [URIS_KEY]: {} }, (response) => {
       const uris = response[URIS_KEY];
       uris[uri] = date;
-      chrome.storage.sync.set({ [URIS_KEY]: uris }, () => {
+      chrome.storage.local.set({ [URIS_KEY]: uris }, () => {
         resolve();
       });
     });
@@ -67,24 +63,16 @@ function addURIToStorage(uri, date) {
 
 /**
  * Get a date from a given URI
- * @param uri
- * @returns {Promise.<String>}
  */
 async function getDateOfCreation(uri) {
   try {
-    // If the uri exists in the storage, which means
-    // it has been fetched before, the stored data will be
-    // used without fetching again.
     const existingDate = await getURIFromStorage(uri);
-    if (existingDate) {
-      return existingDate;
-    }
+    if (existingDate) return existingDate;
 
-    // Otherwise, fetch the uri and store it inside the storage
     const response = await fetch(uri);
     const data = await response.json();
     const date = data.created_at;
-    await addURIToStorage(uri, date); // eslint-disable-line no-unused-expressions
+    await addURIToStorage(uri, date); 
     return date;
   } catch (e) {
     throw new Error(e);
@@ -93,24 +81,18 @@ async function getDateOfCreation(uri) {
 
 /**
  * Get date format
- * @returns Promise
  */
 function getDateFormat() {
   return new Promise((resolve) => {
     chrome.storage.sync.get(
       { [DATE_FORMAT_KEY]: DEFAULT_DATE_FORMAT },
-      (response) => {
-        resolve(response[DATE_FORMAT_KEY]);
-      }
+      (response) => resolve(response[DATE_FORMAT_KEY])
     );
   });
 }
 
 /**
  * Format the given date using moment.js
- * @param date
- * @param format
- * @returns {String}
  */
 function formatDate(date, format) {
   return moment(date).format(format);
@@ -118,16 +100,16 @@ function formatDate(date, format) {
 
 /**
  * Inject the given date into HTML
- * @param date
  */
 function injectDateToHTML(date) {
-  const h2Elems = Array.from(
-    document.querySelectorAll('.Layout-sidebar .BorderGrid-cell > .hide-sm > h2')
-  );
+  if (hasInjected()) return; // Failsafe to prevent double injection
 
-  const aboutElementContainer = h2Elems.find(
-    (elem) => elem.textContent === 'About'
-  ).parentElement;
+  const h2Elems = Array.from(document.querySelectorAll('.BorderGrid-cell h2'));
+  const aboutHeader = h2Elems.find((elem) => elem.textContent.trim() === 'About');
+  
+  if (!aboutHeader || !aboutHeader.parentElement) return;
+  
+  const aboutElementContainer = aboutHeader.parentElement;
 
   const dateHTML = `
     <div id="gdc" class="mt-3">
@@ -136,23 +118,54 @@ function injectDateToHTML(date) {
         ${date}
       </a>  
     </div>
-    `;
+  `;
 
   aboutElementContainer.insertAdjacentHTML('beforeend', dateHTML);
 }
 
 /**
- * Main function
+ * Handle navigation and fetch logic independently of injection
  */
-async function init() {
-  if (isLandPage() && !hasInjected()) {
-    const uri = getRepositoryURI();
+async function processPage() {
+  if (!isLandPage()) return;
+
+  const uri = getRepositoryURI();
+  
+  // Only trigger expensive network/storage logic if the repository actually changed
+  if (uri !== currentRepoURI) {
+    currentRepoURI = uri;
+    cachedFormattedDate = null; // Clear old cache immediately 
+    
     const date = await getDateOfCreation(uri);
     const dateFormat = await getDateFormat();
-    const formattedDate = formatDate(date, dateFormat);
-    injectDateToHTML(formattedDate);
+    cachedFormattedDate = formatDate(date, dateFormat);
+  }
+
+  if (cachedFormattedDate) {
+    injectDateToHTML(cachedFormattedDate);
   }
 }
 
-document.addEventListener('pjax:end', init, false);
-init();
+/**
+ * Brute-force resilience against React DOM updates
+ */
+function startObserver() {
+  if (domObserver) domObserver.disconnect();
+  
+  domObserver = new MutationObserver(() => {
+    if (isLandPage() && !hasInjected() && cachedFormattedDate) {
+      injectDateToHTML(cachedFormattedDate);
+    }
+  });
+
+  // Watch the entire body. It's safe because our observer logic is incredibly lightweight.
+  domObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+// GitHub routing events
+document.addEventListener('pjax:end', processPage, false); 
+document.addEventListener('turbo:load', processPage, false); 
+
+// Initial payload execution
+processPage();
+startObserver();
