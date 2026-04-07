@@ -15,17 +15,16 @@ const elements = {
  */
 function formatPreview(createdDate, pushedDate, settings, dateFormat) {
   let createdStr = '';
-  const now = new Date();
+  const dummyDate = new Date();
+  dummyDate.setFullYear(dummyDate.getFullYear() - 4); // 4 years ago
   
   if (settings.relativeTime) {
-    createdStr = 'Created 4 years ago'; // Hardcoded for preview visual consistency
+    createdStr = `Created ${getRelativeTime(dummyDate.toISOString())}`;
   } else {
-    // Basic absolute format logic (simulating Intl.DateTimeFormat)
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    createdStr = `Created ${new Date('2021-06-24').toLocaleDateString(undefined, options)}`;
+    createdStr = `Created ${formatAbsoluteDate(dummyDate.toISOString(), dateFormat)}`;
   }
 
-  let healthStr = settings.showHealth ? ' • Last push 3 days ago' : '';
+  let healthStr = settings.showHealth ? ' • Last push 2 days ago' : '';
   
   return `${createdStr}${healthStr}`;
 }
@@ -54,12 +53,13 @@ function saveSettings() {
     : elements.formatSelect.value;
 
   chrome.storage.sync.set({
-    [PAT_KEY]: elements.pat.value,
     [SETTINGS_KEY]: settings,
     [DATE_FORMAT_KEY]: dateFormat,
   }, () => {
-    showStatus();
-    updatePreview();
+    chrome.storage.local.set({ [PAT_KEY]: elements.pat.value }, () => {
+      showStatus();
+      updatePreview();
+    });
   });
 }
 
@@ -83,26 +83,42 @@ function updatePreview() {
  */
 function init() {
   chrome.storage.sync.get({
-    [PAT_KEY]: '',
     [SETTINGS_KEY]: DEFAULT_SETTINGS,
     [DATE_FORMAT_KEY]: DEFAULT_DATE_FORMAT,
   }, (items) => {
-    elements.pat.value = items[PAT_KEY];
-    elements.relativeTime.checked = items[SETTINGS_KEY].relativeTime;
-    elements.showHealth.checked = items[SETTINGS_KEY].showHealth;
-    
-    // Check if current format is in the dropdown
-    const options = Array.from(elements.formatSelect.options).map(o => o.value);
-    if (options.includes(items[DATE_FORMAT_KEY])) {
-      elements.formatSelect.value = items[DATE_FORMAT_KEY];
-      elements.customFormat.style.display = 'none';
-    } else {
-      elements.formatSelect.value = 'custom';
-      elements.customFormat.value = items[DATE_FORMAT_KEY];
-      elements.customFormat.style.display = 'block';
-    }
-    
-    updatePreview();
+    chrome.storage.local.get({ [PAT_KEY]: '' }, (localItems) => {
+      // Also try to migrate from sync if it exists but local is empty
+      if (!localItems[PAT_KEY]) {
+        chrome.storage.sync.get({ [PAT_KEY]: '' }, (syncItems) => {
+          if (syncItems[PAT_KEY]) {
+            elements.pat.value = syncItems[PAT_KEY];
+            // Migrate
+            chrome.storage.local.set({ [PAT_KEY]: syncItems[PAT_KEY] });
+            chrome.storage.sync.remove(PAT_KEY);
+          } else {
+            elements.pat.value = '';
+          }
+        });
+      } else {
+        elements.pat.value = localItems[PAT_KEY];
+      }
+      
+      elements.relativeTime.checked = items[SETTINGS_KEY].relativeTime;
+      elements.showHealth.checked = items[SETTINGS_KEY].showHealth;
+      
+      // Check if current format is in the dropdown
+      const options = Array.from(elements.formatSelect.options).map(o => o.value);
+      if (options.includes(items[DATE_FORMAT_KEY])) {
+        elements.formatSelect.value = items[DATE_FORMAT_KEY];
+        elements.customFormat.style.display = 'none';
+      } else {
+        elements.formatSelect.value = 'custom';
+        elements.customFormat.value = items[DATE_FORMAT_KEY];
+        elements.customFormat.style.display = 'block';
+      }
+      
+      updatePreview();
+    });
   });
 
   // Listen for changes

@@ -11,23 +11,23 @@ function handleBrowserActionClicked() {
  * Clean up old cache entries
  */
 async function cleanCache() {
-  const response = await chrome.storage.local.get({ [URIS_KEY]: {} });
-  const uris = response[URIS_KEY];
+  const response = await chrome.storage.local.get({ [REPO_CACHE_KEY]: {} });
+  const repoCache = response[REPO_CACHE_KEY];
   const now = Date.now();
   let changed = false;
 
-  for (const key in uris) {
-    const entry = uris[key];
+  for (const key in repoCache) {
+    const entry = repoCache[key];
     // If entry has a timestamp (new format), check TTL. 
     // If it's old format (just string), we'll keep it for now but ideally add timestamp on next fetch.
     if (entry.cached_at && (now - entry.cached_at > CACHE_TTL_MS)) {
-      delete uris[key];
+      delete repoCache[key];
       changed = true;
     }
   }
 
   if (changed) {
-    await chrome.storage.local.set({ [URIS_KEY]: uris });
+    await chrome.storage.local.set({ [REPO_CACHE_KEY]: repoCache });
   }
 }
 
