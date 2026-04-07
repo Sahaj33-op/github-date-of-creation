@@ -1,4 +1,4 @@
-/* global chrome, DATE_FORMAT_KEY, REPO_CACHE_KEY, DEFAULT_DATE_FORMAT, PAT_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, getRelativeTime, formatAbsoluteDate, getLindyBadge, getHistoricalContext */
+/* global chrome, DATE_FORMAT_KEY, REPO_CACHE_KEY, DEFAULT_DATE_FORMAT, PAT_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, getRelativeTime, formatAbsoluteDate, getLindyBadge */
 
 // In-memory cache for high-performance reads and duplicate-fetch prevention
 const cache = {
@@ -12,6 +12,8 @@ let storageWriteTimer = null;
 const DEBUG = false;
 let processingRepos = new Set();
 let rateLimitResetTime = 0;
+
+const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 if (DEBUG) console.log('[GDC] Extension Script: Heartbeat OK');
 
@@ -90,7 +92,10 @@ async function fetchRepoData(owner, repo) {
   // 2. Read from memory (Instant result)
   const cachedEntry = cache.data[cacheKey];
   if (cachedEntry && typeof cachedEntry === 'object' && cachedEntry.created_at) {
-    return cachedEntry;
+    // Check TTL on read to prevent stale UI loading while disk alarm handles sweeps
+    if (cachedEntry.cached_at && (Date.now() - cachedEntry.cached_at <= CACHE_TTL_MS)) {
+      return cachedEntry;
+    }
   }
 
   // 3. Handle in-flight requests (Prevent duplicate API calls for same repo)
@@ -173,7 +178,6 @@ async function injectToRepoPage() {
       : formatAbsoluteDate(data.created_at, dateFormat);
     const healthStr = (settings.showHealth && data.pushed_at) ? ` • Last push ${getRelativeTime(data.pushed_at)}` : '';
     const lindy = getLindyBadge(data.created_at);
-    const history = getHistoricalContext(data.created_at);
 
     const aboutSelectors = ['[data-testid="about-section"]', '.Layout-sidebar .BorderGrid-cell', 'div[itemprop="about"]', '.BorderGrid-cell'];
     let aboutCell = null;
@@ -188,25 +192,48 @@ async function injectToRepoPage() {
     }
 
     if (aboutCell && !aboutCell.querySelector('#gdc-injected')) {
-      const dateHTML = `
-        <div id="gdc-injected" class="mt-3 py-3 border-top color-border-muted" style="animation: fadeIn 0.5s ease-in-out;">
-          <div style="display:flex; align-items:flex-start; gap:12px;">
-            <div style="font-size: 28px; line-height: 1;">${lindy.icon}</div>
-            <div style="flex:1;">
-              <div style="font-weight: 600; font-size: 14px; color: var(--color-fg-default);">
-                ${createdStr}${healthStr}
-              </div>
-              <div style="font-size: 13px; color: var(--color-fg-muted); margin-top: 2px;">
-                Project Maturity: <strong>${lindy.label}</strong>
-              </div>
-              ${history ? `<div style="font-style: italic; margin-top: 4px; opacity: 0.8; font-size: 12px;">${history}</div>` : ''}
-            </div>
-          </div>
-        </div>
-      `;
+      const wrapper = document.createElement('div');
+      wrapper.id = 'gdc-injected';
+      wrapper.className = 'mt-3 py-3 border-top color-border-muted';
+      wrapper.style.animation = 'fadeIn 0.5s ease-in-out';
+      
+      const flexContainer = document.createElement('div');
+      flexContainer.style.display = 'flex';
+      flexContainer.style.alignItems = 'flex-start';
+      flexContainer.style.gap = '12px';
+
+      const iconDiv = document.createElement('div');
+      iconDiv.style.fontSize = '28px';
+      iconDiv.style.lineHeight = '1';
+      iconDiv.textContent = lindy.icon;
+
+      const textDiv = document.createElement('div');
+      textDiv.style.flex = '1';
+
+      const statusDiv = document.createElement('div');
+      statusDiv.style.fontWeight = '600';
+      statusDiv.style.fontSize = '14px';
+      statusDiv.style.color = 'var(--color-fg-default)';
+      statusDiv.textContent = `${createdStr}${healthStr}`;
+
+      const maturityDiv = document.createElement('div');
+      maturityDiv.style.fontSize = '13px';
+      maturityDiv.style.color = 'var(--color-fg-muted)';
+      maturityDiv.style.marginTop = '2px';
+      
+      maturityDiv.innerHTML = `Project Maturity: <strong></strong>`;
+      maturityDiv.querySelector('strong').textContent = lindy.label;
+
+      textDiv.appendChild(statusDiv);
+      textDiv.appendChild(maturityDiv);
+      
+      flexContainer.appendChild(iconDiv);
+      flexContainer.appendChild(textDiv);
+      wrapper.appendChild(flexContainer);
+
       const target = aboutCell.querySelector('p.f4') || aboutCell.querySelector('h2');
-      if (target) target.insertAdjacentHTML('afterend', dateHTML);
-      else aboutCell.insertAdjacentHTML('afterbegin', dateHTML);
+      if (target) target.insertAdjacentElement('afterend', wrapper);
+      else aboutCell.insertAdjacentElement('afterbegin', wrapper);
     }
   } catch (err) {
     if (err.message === 'RATE_LIMIT_EXCEEDED') showErrorInInject('Rate limit exceeded. Add a PAT in options.');
@@ -220,7 +247,14 @@ function showErrorInInject(msg) {
   if (!sidebar) return;
   const aboutCell = sidebar.querySelector('.BorderGrid-cell') || sidebar.querySelector('[data-testid="about-section"]');
   if (!aboutCell || aboutCell.querySelector('#gdc-error')) return;
-  aboutCell.insertAdjacentHTML('beforeend', `<div id="gdc-error" class="mt-2 text-small color-fg-danger" style="color: var(--color-fg-danger, #cf222e);">${msg}</div>`);
+  
+  const errDiv = document.createElement('div');
+  errDiv.id = 'gdc-error';
+  errDiv.className = 'mt-2 text-small color-fg-danger';
+  errDiv.style.color = 'var(--color-fg-danger, #cf222e)';
+  errDiv.textContent = msg;
+  
+  aboutCell.appendChild(errDiv);
 }
 
 /**
@@ -232,16 +266,17 @@ async function injectToSearchResults() {
 
   if (DEBUG) console.log('[GDC] Scanning search results...');
 
-  const [settings, dateFormat, pat, cacheData] = await Promise.all([
+  if (cache.data === null) {
+    cache.data = await getFromStorage(REPO_CACHE_KEY, {});
+  }
+
+  const [settings, dateFormat, pat] = await Promise.all([
     getFromSyncStorage(SETTINGS_KEY, DEFAULT_SETTINGS),
     getFromSyncStorage(DATE_FORMAT_KEY, DEFAULT_DATE_FORMAT),
-    getPat(),
-    cache.data || getFromStorage(REPO_CACHE_KEY, {})
+    getPat()
   ]);
   
-  if (cache.data === null) cache.data = cacheData;
   let fetchCount = 0;
-
   const CONCURRENCY = 5;
   let executing = new Set();
 
@@ -257,7 +292,8 @@ async function injectToSearchResults() {
 
     const [owner, repo] = pathParts;
     const cacheKey = `${owner}/${repo}`;
-    const isCached = cache.data[cacheKey] && typeof cache.data[cacheKey] === 'object' && cache.data[cacheKey].created_at;
+    const cachedEntry = cache.data[cacheKey];
+    const isCached = cachedEntry && typeof cachedEntry === 'object' && cachedEntry.created_at && (Date.now() - cachedEntry.cached_at <= CACHE_TTL_MS);
     
     // Rate limit check
     if (!pat && !isCached && fetchCount >= 5) {
@@ -276,18 +312,29 @@ async function injectToSearchResults() {
       const lindy = getLindyBadge(data.created_at);
       const createdStr = settings.relativeTime ? getRelativeTime(data.created_at) : formatAbsoluteDate(data.created_at, dateFormat);
       const target = item.querySelector('.f6.color-fg-muted, .text-small.color-fg-muted, .color-fg-subtle');
-      const html = `
-        <span class="mr-3 gdc-injected-search-label d-inline-flex flex-items-center" style="gap:4px; margin-right: 12px; vertical-align: middle;" title="Created on ${new Date(data.created_at).toLocaleDateString()}">
-          <span style="font-size: 14px;">${lindy.icon}</span>
-          <svg height="14" class="octicon octicon-calendar" viewBox="0 0 16 16" version="1.1" width="14" aria-hidden="true" style="fill: currentColor; opacity: 0.7;"><path fill-rule="evenodd" d="M13 2h-1v1.5c0 .28-.22.5-.5.5h-2c-.28 0-.5-.22-.5-.5V2H6v1.5c0 .28-.22.5-.5.5h-2c-.28 0-.5-.22-.5-.5V2H2c-.55 0-1 .45-1 1v11c0 .55.45 1 1 1h11c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm0 12H2V5h11v9zM5 3H4V1h1v2zm6 0h-1V1h1v2z"></path></svg>
-          <span style="font-size: 12px;">Created ${createdStr}</span>
-        </span>
+      
+      const wrapper = document.createElement('span');
+      wrapper.className = 'mr-3 gdc-injected-search-label d-inline-flex flex-items-center';
+      wrapper.style.gap = '4px';
+      wrapper.style.marginRight = '12px';
+      wrapper.style.verticalAlign = 'middle';
+      wrapper.setAttribute('title', `Created on ${new Date(data.created_at).toLocaleDateString()}`);
+
+      wrapper.innerHTML = `
+        <span style="font-size: 14px;" class="gdc-search-icon"></span>
+        <svg height="14" class="octicon octicon-calendar" viewBox="0 0 16 16" version="1.1" width="14" aria-hidden="true" style="fill: currentColor; opacity: 0.7;"><path fill-rule="evenodd" d="M13 2h-1v1.5c0 .28-.22.5-.5.5h-2c-.28 0-.5-.22-.5-.5V2H6v1.5c0 .28-.22.5-.5.5h-2c-.28 0-.5-.22-.5-.5V2H2c-.55 0-1 .45-1 1v11c0 .55.45 1 1 1h11c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm0 12H2V5h11v9zM5 3H4V1h1v2zm6 0h-1V1h1v2z"></path></svg>
+        <span style="font-size: 12px;" class="gdc-search-text"></span>
       `;
-      if (target) target.insertAdjacentHTML('afterbegin', html);
-      else {
+      
+      wrapper.querySelector('.gdc-search-icon').textContent = lindy.icon;
+      wrapper.querySelector('.gdc-search-text').textContent = `Created ${createdStr}`;
+
+      if (target) {
+        target.insertAdjacentElement('afterbegin', wrapper);
+      } else {
         const row = document.createElement('div');
         row.className = 'mt-1 text-small color-fg-subtle';
-        row.innerHTML = html;
+        row.appendChild(wrapper);
         item.appendChild(row);
       }
     }).catch(e => {
@@ -332,5 +379,11 @@ function startObserver() {
 processPage();
 startObserver();
 
-document.addEventListener('pjax:end', () => requestAnimationFrame(processPage));
-document.addEventListener('turbo:load', () => requestAnimationFrame(processPage));
+document.addEventListener('pjax:end', () => {
+  processingRepos.clear();
+  requestAnimationFrame(processPage);
+});
+document.addEventListener('turbo:load', () => {
+  processingRepos.clear();
+  requestAnimationFrame(processPage);
+});

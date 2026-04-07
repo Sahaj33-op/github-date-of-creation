@@ -52,20 +52,11 @@ function getLindyBadge(dateString) {
   return { icon: '🌿', label: 'Established' };
 }
 
-/**
- * Utility: Historical context
- */
-function getHistoricalContext(dateString) {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const milestones = [
-    { year: 2013, label: 'React 0.3' },
-    { year: 2009, label: 'Node.js' },
-    { year: 2015, label: 'ES6' },
-    { year: 2016, label: 'Next.js' },
-    { year: 2010, label: 'AngularJS' },
-    { year: 2014, label: 'Vue.js' },
-  ];
-  const relevant = milestones.find(m => m.year === year);
-  return relevant ? `Created around the time ${relevant.label} launched!` : null;
+// Export for Node environments (Vitest/Jest) but keep safe for browser
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    getRelativeTime,
+    formatAbsoluteDate,
+    getLindyBadge
+  };
 }
