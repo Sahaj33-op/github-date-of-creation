@@ -18,9 +18,19 @@ A production-grade Chrome extension that seamlessly injects project maturity ins
 - **Performance First**: Removed `moment.js` in favor of native `Intl` APIs, reducing memory usage and bundle size by 80%.
 - **Secure PAT Authentication**: Automated setup for Personal Access Tokens to bypass the unauthenticated 60 requests/hour limit.
 
-## 📸 Redesigned UI
+## 📸 Extension in Action
 
-The extension features a new, premium options page with **Glassmorphism** design, real-time previews, and dark-mode support.
+The extension seamlessly blends into the native GitHub UI on repositories, search pages, and trending lists. The new options page features a premium **Glassmorphism** design, real-time previews, and native dark-mode support.
+
+<p align="center">
+  <img src="./screenshots/repo.png" width="48%" alt="Repository Badge Injection">
+  <img src="./screenshots/options.png" width="48%" alt="Redesigned Options Page">
+</p>
+
+<p align="center">
+  <img src="./screenshots/search.png" width="48%" alt="Search Results Injection">
+  <img src="./screenshots/trending.png" width="48%" alt="Trending Page Injection">
+</p>
 
 > [!TIP]
 > Use the **Relative Time** toggle to switch between exact dates (e.g., Oct 3, 2018) and relative time (e.g., 5 years ago).
