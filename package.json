@@ -2,9 +2,8 @@
   "name": "github-date-of-creation",
   "version": "1.0.0",
   "description": "[![Manifest V3](https://img.shields.io/badge/Manifest-V3-success.svg?logo=google-chrome&logoColor=white)](https://developer.chrome.com/docs/extensions/mv3/intro/) [![Moment-less](https://img.shields.io/badge/Moment--Free-Native%20JS-blueviolet.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run"
   },
   "repository": {
     "type": "git",
@@ -13,7 +12,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/Sahaj33-op/github-date-of-creation/issues"
   },

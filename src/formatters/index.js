@@ -53,10 +53,8 @@ function getLindyBadge(dateString) {
 }
 
 // Export for Node environments (Vitest/Jest) but keep safe for browser
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    getRelativeTime,
-    formatAbsoluteDate,
-    getLindyBadge
-  };
+if (typeof exports !== 'undefined') {
+  exports.getRelativeTime = getRelativeTime;
+  exports.formatAbsoluteDate = formatAbsoluteDate;
+  exports.getLindyBadge = getLindyBadge;
 }

@@ -13,8 +13,6 @@ const DEBUG = false;
 let processingRepos = new Set();
 let rateLimitResetTime = 0;
 
-const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
-
 if (DEBUG) console.log('[GDC] Extension Script: Heartbeat OK');
 
 /**
@@ -313,6 +311,8 @@ async function injectToSearchResults() {
       const createdStr = settings.relativeTime ? getRelativeTime(data.created_at) : formatAbsoluteDate(data.created_at, dateFormat);
       const target = item.querySelector('.f6.color-fg-muted, .text-small.color-fg-muted, .color-fg-subtle');
       
+      const svgHTML = `<svg height="14" class="octicon octicon-calendar" viewBox="0 0 16 16" version="1.1" width="14" aria-hidden="true" style="fill: currentColor; opacity: 0.7;"><path fill-rule="evenodd" d="M13 2h-1v1.5c0 .28-.22.5-.5.5h-2c-.28 0-.5-.22-.5-.5V2H6v1.5c0 .28-.22.5-.5.5h-2c-.28 0-.5-.22-.5-.5V2H2c-.55 0-1 .45-1 1v11c0 .55.45 1 1 1h11c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm0 12H2V5h11v9zM5 3H4V1h1v2zm6 0h-1V1h1v2z"></path></svg>`;
+
       const wrapper = document.createElement('span');
       wrapper.className = 'mr-3 gdc-injected-search-label d-inline-flex flex-items-center';
       wrapper.style.gap = '4px';
@@ -322,7 +322,7 @@ async function injectToSearchResults() {
 
       wrapper.innerHTML = `
         <span style="font-size: 14px;" class="gdc-search-icon"></span>
-        <svg height="14" class="octicon octicon-calendar" viewBox="0 0 16 16" version="1.1" width="14" aria-hidden="true" style="fill: currentColor; opacity: 0.7;"><path fill-rule="evenodd" d="M13 2h-1v1.5c0 .28-.22.5-.5.5h-2c-.28 0-.5-.22-.5-.5V2H6v1.5c0 .28-.22.5-.5.5h-2c-.28 0-.5-.22-.5-.5V2H2c-.55 0-1 .45-1 1v11c0 .55.45 1 1 1h11c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm0 12H2V5h11v9zM5 3H4V1h1v2zm6 0h-1V1h1v2z"></path></svg>
+        ${svgHTML}
         <span style="font-size: 12px;" class="gdc-search-text"></span>
       `;
       

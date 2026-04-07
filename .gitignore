@@ -30,3 +30,4 @@ Icon
 *.swp
 *.vim
 
+node_modules/

@@ -14,7 +14,6 @@ A production-grade Chrome extension that seamlessly injects project maturity ins
   - 🌳 **Mature** (>5 years)
   - 🏛️ **Ancient** (>10 years)
 - **Health Indicators**: Integrated "Last push" status to differentiate between stable, long-term tools and abandoned legacy code.
-- **Historical Context**: Get relative context for every repo (e.g., *"Created around React 16.8"* or *"Started before the pandemic"*).
 - **Search & Trending Support**: Dates are injected directly into search results and trending pages—not just main repository pages.
 - **Performance First**: Removed `moment.js` in favor of native `Intl` APIs, reducing memory usage and bundle size by 80%.
 - **Secure PAT Authentication**: Automated setup for Personal Access Tokens to bypass the unauthenticated 60 requests/hour limit.
