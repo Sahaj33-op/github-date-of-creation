@@ -1,4 +1,4 @@
-# <img src="./icons/icon128.png" width="45" align="left"> GitHub Date of Creation (v3.1)
+# <img src="./icons/icon128.png" width="45" align="left"> GitHub Date of Creation (v3.1.1)
 
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-success.svg?logo=google-chrome&logoColor=white)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![Moment-less](https://img.shields.io/badge/Moment--Free-Native%20JS-blueviolet.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat)
@@ -13,7 +13,7 @@ A production-grade cross-browser extension that seamlessly injects project matur
   - 🌿 **Established** (>1 year)
   - 🌳 **Mature** (>5 years)
   - 🏛️ **Ancient** (>10 years)
-- **Rich Hover Cards (Tooltips)**: Hover over the injected sidebar badge to view a rich details card showing live stars, forks, and license details extracted dynamically from the webpage DOM (ensures 100% accuracy and preserves API rate limits).
+- **Interpretive Insights Cards (Tooltips)**: Hover over the injected sidebar badge to view an insights popover explaining the project's maturity status (Lindy Effect) and maintenance health (what the classifications mean, keeping details informative and non-redundant).
 - **Redesigned Options & Customizable Themes**: Toggle between three different card visual themes (*GitHub Native*, *Glassmorphism*, and *Compact*) with a real-time interactive preview.
 - **API Rate Limit Quota Meter**: Built-in request usage progress bar inside the options page to track your remaining GitHub API request quota.
 - **Cross-Browser Compatibility**: Engineered to run natively on both **Chromium-based browsers** (Chrome, Edge, Brave, Opera, Vivaldi) and **Mozilla Firefox / Firefox-based browsers** (e.g. Zen Browser).

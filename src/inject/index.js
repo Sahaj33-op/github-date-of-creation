@@ -265,33 +265,24 @@ async function injectToRepoPage() {
       wrapper.addEventListener('mouseenter', (e) => {
         const tooltip = getTooltip();
         const health = getHealthStatus(data.pushed_at);
-        const starsStr = getStarsFromDOM();
-        const forksStr = getForksFromDOM();
-        const licenseStr = getLicenseFromDOM();
         
         tooltip.innerHTML = `
-          <div class="gdc-tooltip-title">${owner}/${repo} Details</div>
+          <div class="gdc-tooltip-title">${owner}/${repo} Insights</div>
           <div class="gdc-tooltip-row">
-            <span class="gdc-tooltip-label">Maturity Status:</span>
+            <span class="gdc-tooltip-label">Maturity:</span>
             <span class="gdc-tooltip-value">${lindy.icon} ${lindy.label}</span>
           </div>
-          <div class="gdc-tooltip-row">
-            <span class="gdc-tooltip-label">Project Health:</span>
+          <div style="font-size: 11px; color: #8b949e; margin-bottom: 8px; margin-top: -2px; line-height: 1.3;">
+            ${getLindyExplanation(lindy.label)}
+          </div>
+          <div class="gdc-tooltip-row" style="border-top: 1px solid #30363d; padding-top: 8px; margin-top: 4px;">
+            <span class="gdc-tooltip-label">Maintenance:</span>
             <span class="gdc-tooltip-value" style="color: ${health.color}; font-weight: bold;">
               ${health.icon} ${health.label}
             </span>
           </div>
-          <div class="gdc-tooltip-row">
-            <span class="gdc-tooltip-label">Stars:</span>
-            <span class="gdc-tooltip-value">⭐ ${starsStr}</span>
-          </div>
-          <div class="gdc-tooltip-row">
-            <span class="gdc-tooltip-label">Forks:</span>
-            <span class="gdc-tooltip-value">🍴 ${forksStr}</span>
-          </div>
-          <div class="gdc-tooltip-row">
-            <span class="gdc-tooltip-label">License:</span>
-            <span class="gdc-tooltip-value">⚖️ ${licenseStr}</span>
+          <div style="font-size: 11px; color: #8b949e; margin-top: -2px; line-height: 1.3;">
+            ${getHealthExplanation(health.label, data.pushed_at)}
           </div>
         `;
         tooltip.classList.add('visible');
@@ -347,48 +338,45 @@ function positionTooltip(e, tooltip) {
   tooltip.style.top = `${y}px`;
 }
 
-function getStarsFromDOM() {
-  const headerStar = document.querySelector('#repo-stars-counter-star') || 
-                     document.querySelector('.Counter.js-social-count') ||
-                     document.querySelector('[data-testid="repository-stars-button"] .Counter');
-  if (headerStar) return headerStar.textContent.trim();
-
-  const sidebarStar = document.querySelector('a[href$="/stargazers"]') || 
-                      document.querySelector('a[href*="/stars"]');
-  if (sidebarStar) {
-    const text = sidebarStar.textContent.trim();
-    return text.replace(/\s*stars?/i, '').trim();
+function getLindyExplanation(label) {
+  const clean = label.replace(/[🌱🌿🌳🏛️\s]/g, '').toLowerCase();
+  if (clean.includes('sprout')) {
+    return 'New project (<1 year). High flexibility, but higher risk of abandonment.';
   }
-  return '0';
+  if (clean.includes('established')) {
+    return 'Surviving project (>1 year). Proven baseline stability and structure.';
+  }
+  if (clean.includes('mature')) {
+    return 'Long-running project (>5 years). High reliability, low likelihood of sudden demise.';
+  }
+  if (clean.includes('ancient')) {
+    return 'Decade-old legacy (>10 years). Deeply established standard, extreme stability.';
+  }
+  return 'Maturity classification based on survival age (Lindy Effect).';
 }
 
-function getForksFromDOM() {
-  const headerFork = document.querySelector('#repo-network-counter') ||
-                     document.querySelector('[data-testid="repository-forks-button"] .Counter');
-  if (headerFork) return headerFork.textContent.trim();
-
-  const sidebarFork = document.querySelector('a[href$="/forks"]') || 
-                      document.querySelector('a[href$="/network/members"]');
-  if (sidebarFork) {
-    const text = sidebarFork.textContent.trim();
-    return text.replace(/\s*forks?/i, '').trim();
+function getHealthExplanation(label, pushedAt) {
+  const clean = label.toLowerCase();
+  let timeStr = 'pushed recently';
+  if (pushedAt) {
+    try {
+      timeStr = `last push was ${getRelativeTime(pushedAt)}`;
+    } catch(e) {}
   }
-  return '0';
-}
-
-function getLicenseFromDOM() {
-  const licenseLink = document.querySelector('a[href*="/LICENSE"]') || 
-                      document.querySelector('a[href*="/license"]');
-  if (licenseLink) {
-    return licenseLink.textContent.trim().replace(/\s*license/i, '').trim();
+  
+  if (clean.includes('active')) {
+    return `Active updates (${timeStr}). Under active and rapid development.`;
   }
-
-  const lawIcon = document.querySelector('.octicon-law');
-  if (lawIcon) {
-    const parentText = lawIcon.parentElement.textContent.trim();
-    return parentText.replace(/\s*license/i, '').trim();
+  if (clean.includes('stable')) {
+    return `Stable updates (${timeStr}). Maintained and responsive to bugs.`;
   }
-  return 'None';
+  if (clean.includes('dormant')) {
+    return `Dormant updates (${timeStr}). Development has slowed, code is stable.`;
+  }
+  if (clean.includes('legacy')) {
+    return `Legacy project (${timeStr}). Unmaintained, proceed with caution.`;
+  }
+  return 'Maintenance frequency classification based on commit history.';
 }
 
 function showErrorInInject(msg) {
