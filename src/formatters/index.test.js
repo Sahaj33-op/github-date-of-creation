@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getRelativeTime, formatAbsoluteDate, getLindyBadge } from './index.js';
+import { getRelativeTime, formatAbsoluteDate, getLindyBadge, getHealthStatus, formatSize } from './index.js';
 
 describe('Formatters', () => {
   beforeEach(() => {
@@ -83,6 +83,52 @@ describe('Formatters', () => {
 
     it('categorizes Ancient (> 10 years)', () => {
       expect(getLindyBadge('2012-01-01T12:00:00.000Z').label).toBe('Ancient');
+    });
+  });
+
+  describe('getHealthStatus', () => {
+    it('handles invalid dates gracefully', () => {
+      expect(getHealthStatus('').label).toBe('Unknown');
+      expect(getHealthStatus('invalid').label).toBe('Unknown');
+    });
+
+    it('categorizes Active (<= 30 days)', () => {
+      expect(getHealthStatus('2023-12-15T12:00:00.000Z').label).toBe('Active');
+      expect(getHealthStatus('2023-12-15T12:00:00.000Z').icon).toBe('⚡');
+    });
+
+    it('categorizes Stable (<= 180 days)', () => {
+      expect(getHealthStatus('2023-10-01T12:00:00.000Z').label).toBe('Stable');
+      expect(getHealthStatus('2023-10-01T12:00:00.000Z').icon).toBe('✅');
+    });
+
+    it('categorizes Dormant (<= 730 days)', () => {
+      expect(getHealthStatus('2022-06-01T12:00:00.000Z').label).toBe('Dormant');
+      expect(getHealthStatus('2022-06-01T12:00:00.000Z').icon).toBe('💤');
+    });
+
+    it('categorizes Legacy (> 2 years)', () => {
+      expect(getHealthStatus('2021-01-01T12:00:00.000Z').label).toBe('Legacy');
+      expect(getHealthStatus('2021-01-01T12:00:00.000Z').icon).toBe('⚠️');
+    });
+  });
+
+  describe('formatSize', () => {
+    it('handles invalid inputs gracefully', () => {
+      expect(formatSize(null)).toBe('unknown');
+      expect(formatSize('invalid')).toBe('unknown');
+    });
+
+    it('formats size in KB', () => {
+      expect(formatSize(500)).toBe('500 KB');
+    });
+
+    it('formats size in MB', () => {
+      expect(formatSize(1500)).toBe('1.5 MB');
+    });
+
+    it('formats size in GB', () => {
+      expect(formatSize(1500000)).toBe('1.4 GB');
     });
   });
 });

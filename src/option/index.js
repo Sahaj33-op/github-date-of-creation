@@ -1,13 +1,18 @@
-/* global chrome, DATE_FORMAT_KEY, DEFAULT_DATE_FORMAT, PAT_KEY, SETTINGS_KEY, DEFAULT_SETTINGS */
+/* global chrome, DATE_FORMAT_KEY, DEFAULT_DATE_FORMAT, PAT_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, RATE_LIMIT_KEY */
 
 const elements = {
   pat: document.getElementById('pat'),
   relativeTime: document.getElementById('relativeTime'),
   showHealth: document.getElementById('showHealth'),
+  theme: document.getElementById('theme'),
   formatSelect: document.getElementById('date-format-select'),
   customFormat: document.getElementById('custom-format'),
   previewText: document.getElementById('preview-text'),
+  previewBox: document.querySelector('.preview-box'),
   status: document.getElementById('status'),
+  quotaCount: document.getElementById('quota-count'),
+  quotaReset: document.getElementById('quota-reset'),
+  quotaBarFill: document.getElementById('quota-bar-fill'),
 };
 
 /**
@@ -46,6 +51,7 @@ async function saveSettings() {
   const settings = {
     relativeTime: elements.relativeTime.checked,
     showHealth: elements.showHealth.checked,
+    theme: elements.theme.value,
   };
   
   const dateFormat = elements.formatSelect.value === 'custom' 
@@ -71,17 +77,66 @@ function updatePreview() {
   const settings = {
     relativeTime: elements.relativeTime.checked,
     showHealth: elements.showHealth.checked,
+    theme: elements.theme.value,
   };
   const dateFormat = elements.formatSelect.value === 'custom' 
     ? elements.customFormat.value 
     : elements.formatSelect.value;
 
   elements.previewText.textContent = formatPreview(null, null, settings, dateFormat);
+  
+  // Set preview theme styles
+  elements.previewBox.className = `preview-box preview-theme-${settings.theme}`;
 }
 
 /**
  * Initialize settings page
  */
+/**
+ * Utility: Fetch and draw API quota info
+ */
+async function updateQuotaDisplay() {
+  if (!chrome.storage || !chrome.storage.local) return;
+  const items = await chrome.storage.local.get({ [RATE_LIMIT_KEY]: null });
+  const quota = items[RATE_LIMIT_KEY];
+  
+  if (!quota) {
+    elements.quotaCount.textContent = 'Quota status: No requests made yet';
+    elements.quotaReset.textContent = '';
+    elements.quotaBarFill.style.width = '100%';
+    elements.quotaBarFill.className = 'quota-bar-fill';
+    return;
+  }
+
+  const limit = quota.limit || 60;
+  const remaining = quota.remaining !== undefined ? quota.remaining : 60;
+  const percent = Math.max(0, Math.min(100, (remaining / limit) * 100));
+  
+  elements.quotaCount.textContent = `Remaining: ${remaining} / ${limit} requests`;
+  elements.quotaBarFill.style.width = `${percent}%`;
+  
+  if (percent <= 20) {
+    elements.quotaBarFill.className = 'quota-bar-fill critical';
+  } else if (percent <= 50) {
+    elements.quotaBarFill.className = 'quota-bar-fill warning';
+  } else {
+    elements.quotaBarFill.className = 'quota-bar-fill';
+  }
+
+  const resetTime = quota.reset;
+  if (resetTime) {
+    const msLeft = resetTime - Date.now();
+    if (msLeft > 0) {
+      const minsLeft = Math.ceil(msLeft / 60000);
+      elements.quotaReset.textContent = `Resets in ${minsLeft}m`;
+    } else {
+      elements.quotaReset.textContent = 'Resets shortly';
+    }
+  } else {
+    elements.quotaReset.textContent = '';
+  }
+}
+
 async function init() {
   const [items, localItems, syncItems] = await Promise.all([
     chrome.storage.sync.get({
@@ -107,6 +162,7 @@ async function init() {
   
   elements.relativeTime.checked = items[SETTINGS_KEY].relativeTime;
   elements.showHealth.checked = items[SETTINGS_KEY].showHealth;
+  elements.theme.value = items[SETTINGS_KEY].theme || 'native';
   
   // Check if current format is in the dropdown
   const options = Array.from(elements.formatSelect.options).map(o => o.value);
@@ -120,11 +176,13 @@ async function init() {
   }
   
   updatePreview();
+  updateQuotaDisplay();
 
   // Listen for changes
   elements.pat.addEventListener('input', saveSettings);
   elements.relativeTime.addEventListener('change', saveSettings);
   elements.showHealth.addEventListener('change', saveSettings);
+  elements.theme.addEventListener('change', saveSettings);
   
   elements.formatSelect.addEventListener('change', () => {
     if (elements.formatSelect.value === 'custom') {

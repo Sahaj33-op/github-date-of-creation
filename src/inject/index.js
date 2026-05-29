@@ -1,4 +1,4 @@
-/* global chrome, DATE_FORMAT_KEY, REPO_CACHE_KEY, DEFAULT_DATE_FORMAT, PAT_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, getRelativeTime, formatAbsoluteDate, getLindyBadge */
+/* global chrome, DATE_FORMAT_KEY, REPO_CACHE_KEY, DEFAULT_DATE_FORMAT, PAT_KEY, SETTINGS_KEY, DEFAULT_SETTINGS, RATE_LIMIT_KEY, getRelativeTime, formatAbsoluteDate, getLindyBadge, getHealthStatus, formatSize */
 
 // In-memory cache for high-performance reads and duplicate-fetch prevention
 const cache = {
@@ -76,6 +76,31 @@ async function getPat() {
 }
 
 /**
+ * Save rate limit metadata to storage
+ */
+function saveRateLimit(headers) {
+  const limit = headers.get('x-ratelimit-limit');
+  const remaining = headers.get('x-ratelimit-remaining');
+  const reset = headers.get('x-ratelimit-reset');
+  if (limit !== null && remaining !== null && reset !== null) {
+    try {
+      if (chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({
+          [RATE_LIMIT_KEY]: {
+            limit: parseInt(limit, 10),
+            remaining: parseInt(remaining, 10),
+            reset: parseInt(reset, 10) * 1000,
+            updated_at: Date.now()
+          }
+        });
+      }
+    } catch (e) {
+      if (DEBUG) console.error('[GDC] Failed to save rate limit', e);
+    }
+  }
+}
+
+/**
  * Optimized fetch with Memory-First & In-Flight Tracking
  */
 async function fetchRepoData(owner, repo) {
@@ -112,6 +137,7 @@ async function fetchRepoData(owner, repo) {
 
     try {
       const response = await fetch(apiUri, { headers });
+      saveRateLimit(response.headers);
       
       const remaining = response.headers.get('x-ratelimit-remaining');
       if (remaining === '0') {
@@ -190,17 +216,20 @@ async function injectToRepoPage() {
     }
 
     if (aboutCell && !aboutCell.querySelector('#gdc-injected')) {
+      const theme = settings.theme || 'native';
       const wrapper = document.createElement('div');
       wrapper.id = 'gdc-injected';
-      wrapper.className = 'mt-3 py-3 border-top color-border-muted';
+      wrapper.className = `gdc-badge-container gdc-theme-${theme}`;
       wrapper.style.animation = 'fadeIn 0.5s ease-in-out';
       
       const flexContainer = document.createElement('div');
+      flexContainer.className = 'gdc-inner-flex';
       flexContainer.style.display = 'flex';
       flexContainer.style.alignItems = 'flex-start';
       flexContainer.style.gap = '12px';
 
       const iconDiv = document.createElement('div');
+      iconDiv.className = 'gdc-icon';
       iconDiv.style.fontSize = '28px';
       iconDiv.style.lineHeight = '1';
       iconDiv.textContent = lindy.icon;
@@ -209,12 +238,14 @@ async function injectToRepoPage() {
       textDiv.style.flex = '1';
 
       const statusDiv = document.createElement('div');
+      statusDiv.className = 'gdc-title';
       statusDiv.style.fontWeight = '600';
       statusDiv.style.fontSize = '14px';
       statusDiv.style.color = 'var(--color-fg-default)';
       statusDiv.textContent = `${createdStr}${healthStr}`;
 
       const maturityDiv = document.createElement('div');
+      maturityDiv.className = 'gdc-subtitle';
       maturityDiv.style.fontSize = '13px';
       maturityDiv.style.color = 'var(--color-fg-muted)';
       maturityDiv.style.marginTop = '2px';
@@ -229,6 +260,54 @@ async function injectToRepoPage() {
       flexContainer.appendChild(textDiv);
       wrapper.appendChild(flexContainer);
 
+      // Tooltip Hover Listeners
+      wrapper.style.cursor = 'pointer';
+      wrapper.addEventListener('mouseenter', (e) => {
+        const tooltip = getTooltip();
+        const health = getHealthStatus(data.pushed_at);
+        const starsStr = getStarsFromDOM();
+        const forksStr = getForksFromDOM();
+        const licenseStr = getLicenseFromDOM();
+        
+        tooltip.innerHTML = `
+          <div class="gdc-tooltip-title">${owner}/${repo} Details</div>
+          <div class="gdc-tooltip-row">
+            <span class="gdc-tooltip-label">Maturity Status:</span>
+            <span class="gdc-tooltip-value">${lindy.icon} ${lindy.label}</span>
+          </div>
+          <div class="gdc-tooltip-row">
+            <span class="gdc-tooltip-label">Project Health:</span>
+            <span class="gdc-tooltip-value" style="color: ${health.color}; font-weight: bold;">
+              ${health.icon} ${health.label}
+            </span>
+          </div>
+          <div class="gdc-tooltip-row">
+            <span class="gdc-tooltip-label">Stars:</span>
+            <span class="gdc-tooltip-value">⭐ ${starsStr}</span>
+          </div>
+          <div class="gdc-tooltip-row">
+            <span class="gdc-tooltip-label">Forks:</span>
+            <span class="gdc-tooltip-value">🍴 ${forksStr}</span>
+          </div>
+          <div class="gdc-tooltip-row">
+            <span class="gdc-tooltip-label">License:</span>
+            <span class="gdc-tooltip-value">⚖️ ${licenseStr}</span>
+          </div>
+        `;
+        tooltip.classList.add('visible');
+        positionTooltip(e, tooltip);
+      });
+
+      wrapper.addEventListener('mousemove', (e) => {
+        const tooltip = getTooltip();
+        positionTooltip(e, tooltip);
+      });
+
+      wrapper.addEventListener('mouseleave', () => {
+        const tooltip = getTooltip();
+        tooltip.classList.remove('visible');
+      });
+
       const target = aboutCell.querySelector('p.f4') || aboutCell.querySelector('h2');
       if (target) target.insertAdjacentElement('afterend', wrapper);
       else aboutCell.insertAdjacentElement('afterbegin', wrapper);
@@ -238,6 +317,78 @@ async function injectToRepoPage() {
   } finally {
     processingRepos.delete(cacheKey);
   }
+}
+
+let globalTooltip = null;
+
+function getTooltip() {
+  if (globalTooltip) return globalTooltip;
+  globalTooltip = document.createElement('div');
+  globalTooltip.className = 'gdc-tooltip';
+  document.body.appendChild(globalTooltip);
+  return globalTooltip;
+}
+
+function positionTooltip(e, tooltip) {
+  const margin = 12;
+  let x = e.pageX + margin;
+  let y = e.pageY + margin;
+  
+  // Boundary check to keep inside viewport
+  const tooltipRect = tooltip.getBoundingClientRect();
+  if (x + tooltipRect.width > window.innerWidth + window.scrollX) {
+    x = e.pageX - tooltipRect.width - margin;
+  }
+  if (y + tooltipRect.height > window.innerHeight + window.scrollY) {
+    y = e.pageY - tooltipRect.height - margin;
+  }
+  
+  tooltip.style.left = `${x}px`;
+  tooltip.style.top = `${y}px`;
+}
+
+function getStarsFromDOM() {
+  const headerStar = document.querySelector('#repo-stars-counter-star') || 
+                     document.querySelector('.Counter.js-social-count') ||
+                     document.querySelector('[data-testid="repository-stars-button"] .Counter');
+  if (headerStar) return headerStar.textContent.trim();
+
+  const sidebarStar = document.querySelector('a[href$="/stargazers"]') || 
+                      document.querySelector('a[href*="/stars"]');
+  if (sidebarStar) {
+    const text = sidebarStar.textContent.trim();
+    return text.replace(/\s*stars?/i, '').trim();
+  }
+  return '0';
+}
+
+function getForksFromDOM() {
+  const headerFork = document.querySelector('#repo-network-counter') ||
+                     document.querySelector('[data-testid="repository-forks-button"] .Counter');
+  if (headerFork) return headerFork.textContent.trim();
+
+  const sidebarFork = document.querySelector('a[href$="/forks"]') || 
+                      document.querySelector('a[href$="/network/members"]');
+  if (sidebarFork) {
+    const text = sidebarFork.textContent.trim();
+    return text.replace(/\s*forks?/i, '').trim();
+  }
+  return '0';
+}
+
+function getLicenseFromDOM() {
+  const licenseLink = document.querySelector('a[href*="/LICENSE"]') || 
+                      document.querySelector('a[href*="/license"]');
+  if (licenseLink) {
+    return licenseLink.textContent.trim().replace(/\s*license/i, '').trim();
+  }
+
+  const lawIcon = document.querySelector('.octicon-law');
+  if (lawIcon) {
+    const parentText = lawIcon.parentElement.textContent.trim();
+    return parentText.replace(/\s*license/i, '').trim();
+  }
+  return 'None';
 }
 
 function showErrorInInject(msg) {

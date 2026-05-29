@@ -1,10 +1,10 @@
-# <img src="./icons/icon128.png" width="45" align="left"> GitHub Date of Creation (v3)
+# <img src="./icons/icon128.png" width="45" align="left"> GitHub Date of Creation (v3.1)
 
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-success.svg?logo=google-chrome&logoColor=white)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![Moment-less](https://img.shields.io/badge/Moment--Free-Native%20JS-blueviolet.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A production-grade Chrome extension that seamlessly injects project maturity insights directly into GitHub's UI. This is a modernized fork of the original extension, rebuilt for **Manifest V3** with zero dependencies and deep UI integration.
+A production-grade cross-browser extension that seamlessly injects project maturity insights directly into GitHub's UI. This is a modernized fork of the original extension, rebuilt for **Manifest V3** with zero dependencies, cross-browser compatibility, and deep UI integration.
 
 ## 🚀 Key Features
 
@@ -13,6 +13,10 @@ A production-grade Chrome extension that seamlessly injects project maturity ins
   - 🌿 **Established** (>1 year)
   - 🌳 **Mature** (>5 years)
   - 🏛️ **Ancient** (>10 years)
+- **Rich Hover Cards (Tooltips)**: Hover over the injected sidebar badge to view a rich details card showing live stars, forks, and license details extracted dynamically from the webpage DOM (ensures 100% accuracy and preserves API rate limits).
+- **Redesigned Options & Customizable Themes**: Toggle between three different card visual themes (*GitHub Native*, *Glassmorphism*, and *Compact*) with a real-time interactive preview.
+- **API Rate Limit Quota Meter**: Built-in request usage progress bar inside the options page to track your remaining GitHub API request quota.
+- **Cross-Browser Compatibility**: Engineered to run natively on both **Chromium-based browsers** (Chrome, Edge, Brave, Opera, Vivaldi) and **Mozilla Firefox / Firefox-based browsers** (e.g. Zen Browser).
 - **Health Indicators**: Integrated "Last push" status to differentiate between stable, long-term tools and abandoned legacy code.
 - **Search & Trending Support**: Dates are injected directly into search results and trending pages—not just main repository pages.
 - **Performance First**: Removed `moment.js` in favor of native `Intl` APIs, reducing memory usage and bundle size by 80%.

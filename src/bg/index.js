@@ -1,5 +1,7 @@
 /* global chrome */
-importScripts('../constant/index.js');
+if (typeof importScripts !== 'undefined') {
+  importScripts('../constant/index.js');
+}
 
 function handleBrowserActionClicked() {
   chrome.runtime.openOptionsPage();

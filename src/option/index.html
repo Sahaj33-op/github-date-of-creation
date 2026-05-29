@@ -36,6 +36,15 @@
     </div>
 
     <div class="section">
+      <label class="label">Badge Theme</label>
+      <select id="theme">
+        <option value="native">GitHub Native (Original)</option>
+        <option value="glassmorphism">Glassmorphism (Premium Card)</option>
+        <option value="compact">Compact (Subtle & Inline)</option>
+      </select>
+    </div>
+
+    <div class="section">
       <label class="label">Date Format (for absolute dates)</label>
       <select id="date-format-select">
         <option value="MMMM, YYYY">Full Month, YYYY (e.g. June, 2021)</option>
@@ -52,6 +61,19 @@
       <div id="preview-content">
         <svg height="16" class="octicon octicon-calendar" viewBox="0 0 16 16" width="16" fill="var(--text-muted)"><path d="M13 2h-1v1.5c0 .28-.22.5-.5.5h-2c-.28 0-.5-.22-.5-.5V2H6v1.5c0 .28-.22.5-.5.5h-2c-.28 0-.5-.22-.5-.5V2H2c-.55 0-1 .45-1 1v11c0 .55.45 1 1 1h11c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm0 12H2V5h11v9zM5 3H4V1h1v2zm6 0h-1V1h1v2z"></path></svg>
         <span id="preview-text">Created 4 years ago • Last push 2 days ago</span>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top: 24px;">
+      <label class="label">API Rate Limit Quota</label>
+      <div class="quota-container">
+        <div class="quota-info">
+          <span id="quota-count">Remaining: 60 / 60 requests</span>
+          <span id="quota-reset">Resets in 60m</span>
+        </div>
+        <div class="quota-bar-bg">
+          <div id="quota-bar-fill" class="quota-bar-fill" style="width: 100%;"></div>
+        </div>
       </div>
     </div>
 
