@@ -22,10 +22,6 @@
     "https://api.github.com/*"
   ],
   "background": {
-    "scripts": [
-      "src/constant/index.js",
-      "src/bg/index.js"
-    ],
     "service_worker": "src/bg/index.js"
   },
   "browser_specific_settings": {
