@@ -265,10 +265,22 @@ async function injectToRepoPage() {
       wrapper.addEventListener('mouseenter', (e) => {
         const tooltip = getTooltip();
         const health = getHealthStatus(data.pushed_at);
+        const exactCreatedStr = new Date(data.created_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+        const exactPushedStr = data.pushed_at 
+          ? new Date(data.pushed_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+          : 'N/A';
         
         tooltip.innerHTML = `
           <div class="gdc-tooltip-title">${owner}/${repo} Insights</div>
           <div class="gdc-tooltip-row">
+            <span class="gdc-tooltip-label">Created:</span>
+            <span class="gdc-tooltip-value">${exactCreatedStr}</span>
+          </div>
+          <div class="gdc-tooltip-row" style="margin-bottom: 8px;">
+            <span class="gdc-tooltip-label">Last Push:</span>
+            <span class="gdc-tooltip-value">${exactPushedStr}</span>
+          </div>
+          <div class="gdc-tooltip-row" style="border-top: 1px solid #30363d; padding-top: 8px;">
             <span class="gdc-tooltip-label">Maturity:</span>
             <span class="gdc-tooltip-value">${lindy.icon} ${lindy.label}</span>
           </div>
