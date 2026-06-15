@@ -7,6 +7,7 @@ const DEFAULT_DATE_FORMAT = 'MMMM, YYYY';
 const DEFAULT_SETTINGS = {
   relativeTime: true,
   showHealth: true,
+  showSize: true,
   theme: 'native',
 };
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;

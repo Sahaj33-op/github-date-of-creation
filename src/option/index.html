@@ -15,7 +15,7 @@
     <div class="section">
       <label class="label">Personal Access Token (PAT)</label>
       <div class="description">
-        Required for more than 60 requests/hour. 
+        Required for more than 60 requests/hour.
         <a href="https://github.com/settings/tokens/new?description=GitHub%20Date%20of%20Creation&scopes=" target="_blank" style="color: var(--primary-color);">Generate one here</a> (No scopes needed).
       </div>
       <input type="text" id="pat" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
@@ -31,6 +31,10 @@
         <label class="checkbox-label">
           <input type="checkbox" id="showHealth">
           Show last push (maintenance status)
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="showSize">
+          Show repository size
         </label>
       </div>
     </div>
@@ -75,6 +79,14 @@
           <div id="quota-bar-fill" class="quota-bar-fill" style="width: 100%;"></div>
         </div>
       </div>
+    </div>
+
+    <div class="section" style="margin-top: 24px;">
+      <label class="label">Cache</label>
+      <div class="description">
+        Clear all cached repository data to force a fresh fetch from the API on next visit.
+      </div>
+      <button id="clearCacheBtn" style="background:var(--danger-color,#f85149);color:white;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;margin-top:8px;">Clear All Cache</button>
     </div>
 
     <div id="status" class="status-badge status-success">Settings saved automatically</div>
