@@ -35,7 +35,9 @@ The extension seamlessly blends into the native GitHub UI on repositories, searc
 > [!TIP]
 > Use the **Relative Time** toggle to switch between exact dates (e.g., Oct 3, 2018) and relative time (e.g., 5 years ago).
 
-## 🛠️ Installation (Developer Mode)
+## 🛠️ Installation
+
+### Browser Extension (Developer Mode)
 
 1. Clone this repository:
    ```bash
@@ -44,6 +46,14 @@ The extension seamlessly blends into the native GitHub UI on repositories, searc
 2. Open Chrome and go to `chrome://extensions`.
 3. Enable **Developer mode** (top right).
 4. Click **Load unpacked** and select the folder you cloned.
+
+### Userscript (Tampermonkey / Violentmonkey)
+
+Prefer a lightweight alternative? Install the userscript from Greasy Fork:
+
+> 📥 **[github-date-of-creation on Greasy Fork](https://greasyfork.org/en/scripts/572909-github-date-of-creation)**
+
+The userscript version includes all the same features — maturity badges, repository size, maintenance status, and per-repo refresh — without needing to install a browser extension.
 
 ## ⚙️ Configuration
 
