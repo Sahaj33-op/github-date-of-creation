@@ -41,7 +41,7 @@ The extension seamlessly blends into the native GitHub UI on repositories, searc
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/Sahaj33-op/github-date-of-creation.git
+   git clone https://github.com/sizwinz/github-date-of-creation.git
    ```
 2. Open Chrome and go to `chrome://extensions`.
 3. Enable **Developer mode** (top right).
@@ -62,4 +62,4 @@ The userscript version includes all the same features — maturity badges, repos
 
 ## 📜 License
 
-MIT © [Sahaj33-op](https://github.com/Sahaj33-op) / Original by [Varayut Lerdkanlayanawat](https://github.com/lvarayut)
+MIT © [sizwinz](https://github.com/sizwinz) / Original by [Varayut Lerdkanlayanawat](https://github.com/lvarayut)

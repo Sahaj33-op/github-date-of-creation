@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         GitHub Date of Creation
-// @namespace    https://github.com/Sahaj33-op
+// @namespace    https://github.com/sizwinz
 // @version      3.1.0
 // @description  Display the date of creation, repository size, and maintenance status for GitHub repositories.
 // @author       Sahaj

@@ -7,15 +7,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Sahaj33-op/github-date-of-creation.git"
+    "url": "git+https://github.com/sizwinz/github-date-of-creation.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Sahaj33-op/github-date-of-creation/issues"
+    "url": "https://github.com/sizwinz/github-date-of-creation/issues"
   },
-  "homepage": "https://github.com/Sahaj33-op/github-date-of-creation#readme",
+  "homepage": "https://github.com/sizwinz/github-date-of-creation#readme",
   "devDependencies": {
     "vitest": "^4.1.3"
   }
