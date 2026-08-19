@@ -53,11 +53,16 @@ const primaryZipName = `github-date-of-creation-v${version}.zip`;
 const primaryZipPath = path.join(distDir, primaryZipName);
 zip.writeZip(primaryZipPath);
 
-// Also save short alias gdc-vX.X.X.zip
+// Also save short alias gdc-vX.X.X.zip and official Firefox .xpi
 const aliasZipName = `gdc-v${version}.zip`;
 const aliasZipPath = path.join(distDir, aliasZipName);
 fs.copyFileSync(primaryZipPath, aliasZipPath);
 
+const xpiName = `github-date-of-creation-v${version}.xpi`;
+const xpiPath = path.join(distDir, xpiName);
+fs.copyFileSync(primaryZipPath, xpiPath);
+
 console.log(`Successfully built extension packages:`);
 console.log(` - dist/${primaryZipName} (${(fs.statSync(primaryZipPath).size / 1024).toFixed(2)} KB)`);
 console.log(` - dist/${aliasZipName}`);
+console.log(` - dist/${xpiName}`);
