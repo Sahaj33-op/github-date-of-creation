@@ -1,4 +1,4 @@
-# <img src="./icons/icon128.png" width="45" align="left"> GitHub Date of Creation (v3.1.2)
+# <img src="./icons/icon128.png" width="45" align="left"> GitHub Date of Creation (v3.1.3)
 
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-success.svg?logo=google-chrome&logoColor=white)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![Moment-less](https://img.shields.io/badge/Moment--Free-Native%20JS-blueviolet.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat)
@@ -38,12 +38,12 @@ The extension seamlessly blends into the native GitHub UI on repositories, searc
 ## 🛠️ Installation
 
 ### 1. Zen Browser / Firefox & Gecko Browsers
-- **Zen Browser (Direct Zip)**:
-  1. Download `github-date-of-creation-v3.1.2.zip` from the [Latest Release](https://github.com/Sahaj33-op/github-date-of-creation/releases/latest).
-  2. Drag and drop the `.zip` file into Zen Browser, or open `about:addons` / `about:debugging` to install.
-- **Firefox / Floorp / Waterfox (Developer Mode)**:
-  1. Navigate to `about:debugging#/runtime/this-firefox`.
-  2. Click **Load Temporary Add-on...** and select `manifest.json` from the extracted folder or the `.zip` file.
+1. Navigate to:
+   ```text
+   about:debugging#/runtime/this-firefox
+   ```
+2. Click **Load Temporary Add-on...**.
+3. Select `github-date-of-creation-v3.1.3.zip` (from [Releases](https://github.com/Sahaj33-op/github-date-of-creation/releases/latest)) or `manifest.json` from the cloned repository.
 
 ### 2. Chrome / Edge / Brave / Chromium Browsers
 1. Download or clone this repository / extract the release `.zip`.

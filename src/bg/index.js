@@ -1,5 +1,7 @@
 if (typeof importScripts !== 'undefined') {
-  importScripts('../constant/index.js');
+  try {
+    importScripts('../constant/index.js');
+  } catch {}
 }
 
 chrome.action.onClicked.addListener(() => {

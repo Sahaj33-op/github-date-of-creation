@@ -1,6 +1,6 @@
 {
   "name": "Github - Date of creation",
-  "version": "3.1.2",
+  "version": "3.1.3",
   "manifest_version": 3,
   "description": "Display a date of creation of a repository hosted on Github",
   "homepage_url": "https://github.com/sizwinz/github-date-of-creation.git",
@@ -22,7 +22,11 @@
     "https://api.github.com/*"
   ],
   "background": {
-    "service_worker": "src/bg/index.js"
+    "service_worker": "src/bg/index.js",
+    "scripts": [
+      "src/constant/index.js",
+      "src/bg/index.js"
+    ]
   },
   "browser_specific_settings": {
     "gecko": {
