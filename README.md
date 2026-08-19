@@ -1,69 +1,142 @@
-# <img src="./icons/icon128.png" width="45" align="left"> GitHub Date of Creation (v3.1.3)
+<div align="center">
 
-[![Manifest V3](https://img.shields.io/badge/Manifest-V3-success.svg?logo=google-chrome&logoColor=white)](https://developer.chrome.com/docs/extensions/mv3/intro/)
-[![Moment-less](https://img.shields.io/badge/Moment--Free-Native%20JS-blueviolet.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+# GitHub Date of Creation
 
-A production-grade cross-browser extension that seamlessly injects project maturity insights directly into GitHub's UI. This is a modernized fork of the original extension, rebuilt for **Manifest V3** with zero dependencies, cross-browser compatibility, and deep UI integration.
+**Instant project maturity insights, creation timelines, and maintenance health metrics injected seamlessly into GitHub.**
 
-## 🚀 Key Features
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-10b981?style=flat-square&logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/mv3/intro/)
+[![Firefox & Zen](https://img.shields.io/badge/Firefox%20%2F%20Zen-Supported-f97316?style=flat-square&logo=firefoxbrowser&logoColor=white)](https://github.com/Sahaj33-op/github-date-of-creation/releases/latest)
+[![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero-3b82f6?style=flat-square)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat)
+[![Tests](https://img.shields.io/badge/Tests-22%20Passing-emerald?style=flat-square&logo=vitest&logoColor=white)](https://github.com/Sahaj33-op/github-date-of-creation)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
 
-- **Project Maturity Badges (Lindy Effect)**: 
-  - 🌱 **Sprout** (<1 year)
-  - 🌿 **Established** (>1 year)
-  - 🌳 **Mature** (>5 years)
-  - 🏛️ **Ancient** (>10 years)
-- **Interpretive Insights Cards (Tooltips)**: Hover over the injected sidebar badge to view exact creation and push timestamps along with explanations of the project's maturity status (Lindy Effect) and maintenance health metrics.
-- **Redesigned Options & Customizable Themes**: Toggle between three different card visual themes (*GitHub Native*, *Glassmorphism*, and *Compact*) with a real-time interactive preview.
-- **API Rate Limit Quota Meter**: Built-in request usage progress bar inside the options page to track your remaining GitHub API request quota.
-- **Cross-Browser Compatibility**: Engineered to run natively on both **Chromium-based browsers** (Chrome, Edge, Brave, Opera, Vivaldi) and **Mozilla Firefox / Firefox-based browsers** (e.g. Zen Browser).
-- **Health Indicators**: Integrated "Last push" status to differentiate between stable, long-term tools and abandoned legacy code.
-- **Search & Trending Support**: Dates are injected directly into search results and trending pages—not just main repository pages.
-- **Performance First**: Removed `moment.js` in favor of native `Intl` APIs, reducing memory usage and bundle size by 80%.
-- **Secure PAT Authentication**: Automated setup for Personal Access Tokens to bypass the unauthenticated 60 requests/hour limit.
+</div>
 
-## 📸 Extension in Action
+---
 
-The extension seamlessly blends into the native GitHub UI on repositories, search pages, and trending lists. The new options page features a premium **Glassmorphism** design, real-time previews, and native dark-mode support.
+## Overview
 
-| Repository Badge | Options Page |
-|:---:|:---:|
-| ![Repository Badge Injection](./screenshots/repo.png) | ![Redesigned Options Page](./screenshots/options.png) |
-| **Search Results** | **Trending Page** |
-| ![Search Results Injection](./screenshots/search.png) | ![Trending Page Injection](./screenshots/trending.png) |
+**GitHub Date of Creation** is a lightweight, cross-browser extension that surfaces the age, lifecycle stage, and maintenance health of any repository directly within GitHub's interface. Built natively for **Manifest V3** with zero external dependencies, it eliminates the need to dig through commit histories or release logs to assess software longevity.
 
-> [!TIP]
-> Use the **Relative Time** toggle to switch between exact dates (e.g., Oct 3, 2018) and relative time (e.g., 5 years ago).
+---
 
-## 🛠️ Installation
+## Visual Showcase
 
-### 1. Zen Browser / Firefox & Gecko Browsers
-1. Navigate to:
+| Repository Maturity Badge | Redesigned Options & Theme Engine |
+| :---: | :---: |
+| ![Repository Badge](./screenshots/repo.png) | ![Options Page](./screenshots/options.png) |
+
+| Search Results Integration | Trending Lists Injection |
+| :---: | :---: |
+| ![Search Results](./screenshots/search.png) | ![Trending Results](./screenshots/trending.png) |
+
+---
+
+## Core Capabilities
+
+### 1. Project Maturity Classification (Lindy Effect)
+Repositories are categorized into clear longevity tiers based on the Lindy Rule, predicting future viability through proven survival time:
+
+| Tier | Lifespan | Interpretation |
+| :--- | :--- | :--- |
+| **Sprout** | `< 1 year` | Early-stage or experimental project. Expect rapid API iteration. |
+| **Established** | `1 - 5 years` | Proven codebase with demonstrated adoption and initial stability. |
+| **Mature** | `5 - 10 years` | Long-standing foundation with stable architectural patterns. |
+| **Ancient** | `> 10 years` | Industry standard with exceptional survival probability. |
+
+### 2. Interactive Insight Cards (Hover Tooltips)
+Hovering over any injected badge opens an interactive insight card displaying:
+* Exact creation date and relative age calculation.
+* Last push timestamp and maintenance classification (Active, Stable, Dormant, Legacy).
+* Total repository storage footprint in KB, MB, or GB.
+* Explanatory breakdown of the repository's lifecycle status.
+
+### 3. Customizable Visual Themes
+Match your personal development environment with three pre-built visual styles:
+* **GitHub Native**: Seamlessly aligns with GitHub's default Primer design system.
+* **Glassmorphism**: Modern translucent frosted-glass styling with backdrop blur.
+* **Compact**: Minimal inline badge footprint for dense repository layouts.
+
+### 4. API Quota & Security
+* **Live Quota Meter**: Real-time progress meter tracking remaining GitHub REST API requests.
+* **Personal Access Token (PAT)**: Optional token configuration to increase rate limits from 60 to 5,000 requests per hour.
+* **Encrypted Local Storage**: Sensitive authentication tokens remain strictly in browser local storage and are never transmitted externally.
+
+---
+
+## Platform Support Matrix
+
+| Platform / Browser | Engine | Status | Distribution |
+| :--- | :--- | :--- | :--- |
+| **Google Chrome** | Chromium / Blink | Supported (MV3) | Unpacked / Zip Release |
+| **Brave / Edge / Opera / Vivaldi** | Chromium / Blink | Supported (MV3) | Unpacked / Zip Release |
+| **Mozilla Firefox** (v109+) | Gecko | Supported (MV3) | Temporary Add-on / Zip |
+| **Zen Browser / Floorp / Waterfox** | Gecko | Supported (MV3) | Direct Zip / Temporary Add-on |
+| **Apple Safari / Mobile Browsers** | WebKit / Mobile | Supported | Userscript (Tampermonkey) |
+
+---
+
+## Installation
+
+### Zen Browser, Firefox, and Gecko-based Browsers
+1. Open a new tab and navigate to:
    ```text
    about:debugging#/runtime/this-firefox
    ```
-2. Click **Load Temporary Add-on...**.
-3. Select `github-date-of-creation-v3.1.3.zip` (from [Releases](https://github.com/Sahaj33-op/github-date-of-creation/releases/latest)) or `manifest.json` from the cloned repository.
+2. Click **Load Temporary Add-on...**
+3. Select `github-date-of-creation-v3.1.3.zip` from the [Latest Release](https://github.com/Sahaj33-op/github-date-of-creation/releases/latest) or select `manifest.json` from the repository root.
 
-### 2. Chrome / Edge / Brave / Chromium Browsers
-1. Download or clone this repository / extract the release `.zip`.
-2. Open `chrome://extensions` (or `edge://extensions`, `brave://extensions`).
-3. Enable **Developer mode** (top right).
-4. Click **Load unpacked** and select the extension folder.
+### Google Chrome, Microsoft Edge, and Chromium Browsers
+1. Download the release archive (`github-date-of-creation-v3.1.3.zip`) and extract its contents.
+2. Navigate to `chrome://extensions` (or `edge://extensions`, `brave://extensions`).
+3. Enable **Developer mode** via the top-right toggle.
+4. Click **Load unpacked** and select the extracted folder.
 
-### Userscript (Tampermonkey / Violentmonkey)
+### Userscript Alternative (Safari, Mobile, and Lightweight Setup)
+For environments without direct extension loading, install the userscript edition:
+* **Greasy Fork**: [github-date-of-creation on Greasy Fork](https://greasyfork.org/en/scripts/572909-github-date-of-creation)
+* Compatible with Tampermonkey, Violentmonkey, and Userscripts across desktop and mobile.
 
-Prefer a lightweight alternative? Install the userscript from Greasy Fork:
+---
 
-> 📥 **[github-date-of-creation on Greasy Fork](https://greasyfork.org/en/scripts/572909-github-date-of-creation)**
+## Configuration Reference
 
-The userscript version includes all the same features — maturity badges, repository size, maintenance status, and per-repo refresh — without needing to install a browser extension.
+| Setting | Options | Default | Description |
+| :--- | :--- | :--- | :--- |
+| **Date Format** | `Relative`, `YYYY-MM-DD`, `MMM D, YYYY`, `Custom` | `Relative` | Toggles between relative time ("5 years ago") and explicit calendar dates. |
+| **Maintenance Health** | `Enabled` / `Disabled` | `Enabled` | Displays real-time last push indicators (Active, Stable, Dormant, Legacy). |
+| **Repository Size** | `Enabled` / `Disabled` | `Enabled` | Shows repository storage footprint calculated from GitHub's metadata. |
+| **Card Theme** | `GitHub Native`, `Glassmorphism`, `Compact` | `GitHub Native` | Sets the visual styling of badge tooltips and sidebar cards. |
+| **Personal Access Token** | String | `Empty` | Authenticates API requests for 5,000 req/hour rate limits. |
 
-## ⚙️ Configuration
+---
 
-- **Rate Limiting**: To avoid API errors, generate a **Personal Access Token** in your GitHub settings and paste it into the extension options.
-- **Date Format**: Choose between native relative time or any custom formatting string (e.g., `YYYY/MM/DD`).
+## Architecture & Performance
 
-## 📜 License
+* **Zero External Dependencies**: Replaced legacy date formatting bundles with native `Intl.DateTimeFormat` and `Intl.RelativeTimeFormat` APIs, reducing footprint by over 80%.
+* **Dual Manifest V3 Runtime**: Unified background execution using Chromium service workers with fallback to Gecko background scripts for universal browser compatibility.
+* **Non-Blocking Asynchronous Hydration**: Metadata fetching executes concurrently using stale-while-revalidate caching and time-to-live (TTL) invalidation to eliminate render blocking.
 
-MIT © [sizwinz](https://github.com/sizwinz) / Original by [Varayut Lerdkanlayanawat](https://github.com/lvarayut)
+---
+
+## Development
+
+```bash
+# Clone the repository
+git clone https://github.com/sizwinz/github-date-of-creation.git
+
+# Install dependencies
+npm install
+
+# Execute unit test suite
+npm test
+
+# Build production zip and xpi distribution packages
+npm run build
+```
+
+---
+
+## License
+
+MIT License. Copyright (c) [sizwinz](https://github.com/sizwinz). Based on original work by [Varayut Lerdkanlayanawat](https://github.com/lvarayut).
