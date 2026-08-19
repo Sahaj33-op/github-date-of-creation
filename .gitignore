@@ -31,3 +31,5 @@ Icon
 *.vim
 
 node_modules/
+dist/
+*.zip

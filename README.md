@@ -37,15 +37,19 @@ The extension seamlessly blends into the native GitHub UI on repositories, searc
 
 ## 🛠️ Installation
 
-### Browser Extension (Developer Mode)
+### 1. Zen Browser / Firefox & Gecko Browsers
+- **Zen Browser (Direct Zip)**:
+  1. Download `github-date-of-creation-v3.1.2.zip` from the [Latest Release](https://github.com/Sahaj33-op/github-date-of-creation/releases/latest).
+  2. Drag and drop the `.zip` file into Zen Browser, or open `about:addons` / `about:debugging` to install.
+- **Firefox / Floorp / Waterfox (Developer Mode)**:
+  1. Navigate to `about:debugging#/runtime/this-firefox`.
+  2. Click **Load Temporary Add-on...** and select `manifest.json` from the extracted folder or the `.zip` file.
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/sizwinz/github-date-of-creation.git
-   ```
-2. Open Chrome and go to `chrome://extensions`.
+### 2. Chrome / Edge / Brave / Chromium Browsers
+1. Download or clone this repository / extract the release `.zip`.
+2. Open `chrome://extensions` (or `edge://extensions`, `brave://extensions`).
 3. Enable **Developer mode** (top right).
-4. Click **Load unpacked** and select the folder you cloned.
+4. Click **Load unpacked** and select the extension folder.
 
 ### Userscript (Tampermonkey / Violentmonkey)
 
